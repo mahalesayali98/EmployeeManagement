@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
-namespace EmployeeManagement;
+namespace EmployeeManagement.EmployeeFunction;
 
-public class Function1
+public class EmployeeFunction
 {
-    private readonly ILogger<Function1> _logger;
+    private readonly ILogger<EmployeeFunction> _logger;
 
-    public Function1(ILogger<Function1> logger)
+    public EmployeeFunction(ILogger<EmployeeFunction> logger)
     {
         _logger = logger;
     }
