@@ -17,6 +17,7 @@ namespace EmployeeManagement.Data
         {
         }
 
+        //Mapping Employees table to employee class
         public DbSet<Employee> Employees => Set<Employee>();
     }
 }
