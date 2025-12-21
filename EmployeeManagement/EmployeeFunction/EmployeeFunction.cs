@@ -1,3 +1,4 @@
+using EmployeeManagement.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -11,23 +12,31 @@ namespace EmployeeManagement.EmployeeFunction;
 public class EmployeeFunction
 {
     private readonly ILogger<EmployeeFunction> _logger;
-    private readonly DbContext dbContext;
+    private readonly EmployeeDbContext employeeDbContext;
 
-    public EmployeeFunction(ILogger<EmployeeFunction> logger, DbContext DbContext)
+    public EmployeeFunction(ILogger<EmployeeFunction> logger, EmployeeDbContext employeeDbContext)
     {
-        dbContext = DbContext;
+        this.employeeDbContext = employeeDbContext;
         _logger = logger;
     }
 
     [Function("GetEmployees")]
     public async Task<HttpResponseData> GetEmployees(
-     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "employees")]
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "employees")]
     HttpRequestData req)
     {
-       // var employees = await dbContext.Employees.ToListAsync();
+        _logger.LogInformation("GetEmployees called");
+
+        _logger.LogInformation("Before DB call");
+
+        List<Model.Employee> employees =
+            await employeeDbContext.Employees.ToListAsync();
+
+        _logger.LogInformation("After DB call");
 
         var response = req.CreateResponse(HttpStatusCode.OK);
-       // await response.WriteAsJsonAsync(employees);
+        await response.WriteAsJsonAsync(employees);
         return response;
     }
+
 }
