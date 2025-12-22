@@ -21,8 +21,7 @@ public class EmployeeFunction
     }
 
     [Function("GetEmployees")]
-    public async Task<HttpResponseData> GetEmployees(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "employees")]
+    public async Task<HttpResponseData> GetEmployees([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "employees")]
     HttpRequestData req)
     {
         _logger.LogInformation("GetEmployees called");
@@ -38,5 +37,36 @@ public class EmployeeFunction
         await response.WriteAsJsonAsync(employees);
         return response;
     }
+
+    [Function("CreateEmployee")]
+    public async Task<HttpResponseData> CreateEmployee( [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "employees")]
+    HttpRequestData req)
+    {
+        // 1? Read request body JSON and convert it into Employee object
+        Model.Employee employee = await req.ReadFromJsonAsync<Model.Employee>();
+
+        // 2? Validate request body
+        if (employee == null)
+        {
+            var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            await badResponse.WriteStringAsync("Invalid employee data");
+            return badResponse;
+        }
+
+        // 3? Add employee object to DbContext (invmemory tracking)
+           employeeDbContext.Employees.Add(employee);
+
+        // 4? Save changes to database (INSERT query executed here)
+        await employeeDbContext.SaveChangesAsync();
+
+        // 5? Create HTTP 201 (Created) response
+        HttpResponseData response = req.CreateResponse(HttpStatusCode.Created);
+
+        // 6? Return newly created employee as JSON
+        await response.WriteAsJsonAsync(employee);
+
+        return response;
+    }
+
 
 }
