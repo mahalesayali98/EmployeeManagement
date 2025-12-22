@@ -7,6 +7,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Text.Json;
 
 namespace EmployeeManagement.EmployeeFunction;
 
@@ -110,6 +111,52 @@ public class EmployeeFunction
 
         var response = req.CreateResponse(HttpStatusCode.OK);
         await response.WriteStringAsync($"Employee with ID {id} is deleted.");
+
+        return response;
+    }
+
+
+    /// <summary>
+    /// Method to update Employee
+    /// </summary>
+    /// <param name="req"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [Function("UpdateEmployee")]
+    public async Task<HttpResponseData> UpdateEmployee( [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "employees/{id:int}")]
+    HttpRequestData req,
+    int id)
+    {
+        // Read request JSON
+        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+        // Convert JSON to Employee
+        Employee updatedEmployee = JsonSerializer.Deserialize<Employee>(
+            requestBody,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+        );
+
+        // Find existing employee
+        Employee existingEmployee = await employeeDbContext.Employees.FindAsync(id);
+
+        if (existingEmployee == null)
+        {
+            HttpResponseData notFound = req.CreateResponse(HttpStatusCode.NotFound);
+            await notFound.WriteStringAsync($"Employee with ID {id} not found");
+            return notFound;
+        }
+
+        // Update fields
+        existingEmployee.Name = updatedEmployee.Name;
+        existingEmployee.Email = updatedEmployee.Email;
+        existingEmployee.Department = updatedEmployee.Department;
+        existingEmployee.Salary = updatedEmployee.Salary;
+
+        // Save updates
+        await employeeDbContext.SaveChangesAsync();
+
+        HttpResponseData response = req.CreateResponse(HttpStatusCode.OK);
+        await response.WriteAsJsonAsync(existingEmployee);
 
         return response;
     }
