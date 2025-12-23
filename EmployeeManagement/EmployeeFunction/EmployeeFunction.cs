@@ -30,16 +30,12 @@ public class EmployeeFunction
     public async Task<HttpResponseData> GetEmployees([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "employees")]
     HttpRequestData req)
     {
-        EmployeeValidator employeeValidator = new();
-
         _logger.LogInformation("GetEmployees called");
 
         _logger.LogInformation("Before DB call");
         List<Model.Employee> employees =
             await (from emp in employeeDbContext.Employees
                    select emp).ToListAsync();
-        List<string> error = employeeValidator.ValidateEmployee(employees);
-
         _logger.LogInformation("After DB call");
 
         var response = req.CreateResponse(HttpStatusCode.OK);
@@ -58,12 +54,17 @@ public class EmployeeFunction
     {
         // 1️ Read request body JSON and convert it into Employee object
         Model.Employee employee = await req.ReadFromJsonAsync<Model.Employee>();
+        EmployeeValidator employeeValidator = new();
+
+        List<string> validationError = EmployeeValidator.ValidateEmployee(employee);
 
         // 2️ Validate request body
-        if (employee == null)
+        List<string> errors = EmployeeValidator.ValidateEmployee(employee);
+
+        if (errors.Any())
         {
             var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-            await badResponse.WriteStringAsync("Invalid employee data");
+            await badResponse.WriteAsJsonAsync(errors);
             return badResponse;
         }
 

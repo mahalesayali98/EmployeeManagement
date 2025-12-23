@@ -10,25 +10,23 @@ namespace EmployeeManagement.Validation
 {
     public class EmployeeValidator
     {
-        public static List<string> ValidateEmployee(List<Employee> employee)
+        public static List<string> ValidateEmployee(Employee employee)
         {
-            var Errors = new List<string>();
-            if (employee == null || !employee.Any())
+            List<string> Errors = new List<string>();
+            if (employee == null)
             {
                 Errors.Add("Employee Cannot be Null");
                 return Errors;
             }
-            foreach(Employee emp in employee)
-            {
-                if (string.IsNullOrEmpty(emp.Name)) ;
+           
+                if (string.IsNullOrEmpty(employee.Name)) 
                 Errors.Add("Name should not be empty");
-                if(string.IsNullOrEmpty(emp.Email)) ;
+                if(string.IsNullOrEmpty(employee.Email)) 
                 Errors.Add("Email should not be empty");
-                if (string.IsNullOrEmpty(emp.Department)) ;
+                if (string.IsNullOrEmpty(employee.Department)) 
                 Errors.Add("Department should not be empty");
-                if (emp.Salary <= 0) ;
-                Errors.Add("Salary is less than zero");
-            }
+                if (employee.Salary <= 0) 
+                Errors.Add("Salary is less than zero");    
 
             return Errors;
         }
