@@ -10,6 +10,11 @@ namespace EmployeeManagement.Validation
 {
     public class EmployeeValidator
     {
+        /// <summary>
+        /// Validate Employee method 
+        /// </summary>
+        /// <param name="employee"></param>
+        /// <returns></returns>
         public static List<string> ValidateEmployee(Employee employee)
         {
             List<string> Errors = new List<string>();
@@ -30,5 +35,17 @@ namespace EmployeeManagement.Validation
 
             return Errors;
         }
+
+        public static string? ValidateEmployeeID(int id)
+        {
+            if (id <= 0)
+            {
+                return "Employee ID must be greater than zero";
+            }
+
+            return null; // valid ID
+        }
+
+
     }
 }

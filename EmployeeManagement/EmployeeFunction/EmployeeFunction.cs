@@ -103,12 +103,13 @@ public class EmployeeFunction
                                    where emp.Id > 1
                                    select emp)
                                    .FirstOrDefaultAsync();
-                                   
+
+        string error = EmployeeValidator.ValidateEmployeeID(id);
         // If employee not found, return 404
-        if (employee == null)
+        if (error.Any())
         {
             HttpResponseData notFound = req.CreateResponse(HttpStatusCode.NotFound);
-            await notFound.WriteStringAsync($"Employee ID : {id} not found.");
+            await notFound.WriteAsJsonAsync(error);
             return notFound;
         }
 
@@ -156,10 +157,11 @@ public class EmployeeFunction
                                          select emp)
                                         .FirstOrDefaultAsync();
 
-        if (existingEmployee == null)
+        List<string> validationError = EmployeeValidator.ValidateEmployee(existingEmployee);
+        if (validationError.Any())
         {
             HttpResponseData notFound = req.CreateResponse(HttpStatusCode.NotFound);
-            await notFound.WriteStringAsync($"Employee with ID {id} not found");
+            await notFound.WriteAsJsonAsync(validationError);
             return notFound;
         }
 
