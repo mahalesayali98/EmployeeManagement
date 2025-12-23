@@ -1,7 +1,7 @@
 ﻿using EmployeeManagement.Data;
 using EmployeeManagement.Model;
+using EmployeeManagement.Validation;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +15,6 @@ public class EmployeeFunction
 {
     private readonly ILogger<EmployeeFunction> _logger;
     private readonly EmployeeDbContext employeeDbContext;
-
     public EmployeeFunction(ILogger<EmployeeFunction> logger, EmployeeDbContext employeeDbContext)
     {
         this.employeeDbContext = employeeDbContext;
@@ -31,13 +30,15 @@ public class EmployeeFunction
     public async Task<HttpResponseData> GetEmployees([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "employees")]
     HttpRequestData req)
     {
+        EmployeeValidator employeeValidator = new();
+
         _logger.LogInformation("GetEmployees called");
 
         _logger.LogInformation("Before DB call");
-
         List<Model.Employee> employees =
             await (from emp in employeeDbContext.Employees
                    select emp).ToListAsync();
+        List<string> error = employeeValidator.ValidateEmployee(employees);
 
         _logger.LogInformation("After DB call");
 
