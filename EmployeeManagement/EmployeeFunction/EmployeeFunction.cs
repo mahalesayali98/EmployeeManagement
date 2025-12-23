@@ -36,7 +36,8 @@ public class EmployeeFunction
         _logger.LogInformation("Before DB call");
 
         List<Model.Employee> employees =
-            await employeeDbContext.Employees.ToListAsync();
+            await (from emp in employeeDbContext.Employees
+                   select emp).ToListAsync();
 
         _logger.LogInformation("After DB call");
 
@@ -93,8 +94,14 @@ public class EmployeeFunction
     int id)
     {
         // Find employee by primary key
-        Employee employee = await employeeDbContext.Employees.FindAsync(id);
+        // Employee employee = await employeeDbContext.Employees.FirstOrDefaultAsync(emp => emp.Id == id);
 
+        // Using SQL query to find out id to delete
+         Employee employee = await(from emp in employeeDbContext.Employees 
+                                   where emp.Id > 1
+                                   select emp)
+                                   .FirstOrDefaultAsync();
+                                   
         // If employee not found, return 404
         if (employee == null)
         {
@@ -137,7 +144,15 @@ public class EmployeeFunction
         );
 
         // Find existing employee
-        Employee existingEmployee = await employeeDbContext.Employees.FindAsync(id);
+        //Model.Employee existingEmployee = await employeeDbContext.Employees
+        //       .FirstOrDefaultAsync(e => e.Id == id);
+
+        //Use of sql query instead sql
+
+        Model.Employee existingEmployee = await (from emp in employeeDbContext.Employees
+                                         where emp.Id > 1
+                                         select emp)
+                                        .FirstOrDefaultAsync();
 
         if (existingEmployee == null)
         {
