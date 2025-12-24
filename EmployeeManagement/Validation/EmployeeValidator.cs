@@ -11,11 +11,12 @@ namespace EmployeeManagement.Validation
 {
     public class EmployeeValidator
     {
-        /// <summary>
-        /// Validate Employee method 
-        /// </summary>
-        /// <param name="employee"></param>
-        /// <returns></returns>
+        
+       /// <summary>
+         /// Validate Employee method 
+         /// </summary>
+         /// <param name="employee"></param>
+         /// <returns></returns>
         public static List<string> ValidateEmployee(Employee employee)
         {
             List<string> Errors = new List<string>();
@@ -43,13 +44,10 @@ namespace EmployeeManagement.Validation
         /// <param name="id"></param>
         /// <param name="employeeDbContext"></param>
         /// <returns></returns>
-        public static string? ValidateEmployeeID(int id, EmployeeDbContext employeeDbContext)
+        public static string? ValidateEmployeeID(int id)
         {
-           bool isPresent = employeeDbContext.Employees.Any(x => x.Id == id);
-            if(!isPresent)
-            {
-                return "Emplyee is not present in Database";
-            }
+            
+          
             //Employee employee = employeeDbContext.Employees.FirstOrDefault(emp => emp.Id == id);
             //if(employee != null)
             //{

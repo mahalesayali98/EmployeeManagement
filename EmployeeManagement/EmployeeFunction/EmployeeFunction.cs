@@ -95,31 +95,26 @@ public class EmployeeFunction
     HttpRequestData req,
     int id)
     {
+        CreateEmployeeResult createEmployeeResult = new();
         // Find employee by primary key
         // Employee employee = await employeeDbContext.Employees.FirstOrDefaultAsync(emp => emp.Id == id);
 
         // Using SQL query to find out id to delete
-         Employee employee = await(from emp in employeeDbContext.Employees 
-                                   where emp.Id > 1
-                                   select emp)
-                                   .FirstOrDefaultAsync();
+        //Employee employee = await(from emp in employeeDbContext.Employees 
+        //                          where emp.Id > 1
+        //                          select emp)
+        //                          .FirstOrDefaultAsync();
 
-        string error = EmployeeValidator.ValidateEmployeeID(id);
+         createEmployeeResult =await employeeBO1.DeleteEmployee(id);
         // If employee not found, return 404
-        if (error.Any())
+        if (!createEmployeeResult.isSuccess)
         {
             HttpResponseData notFound = req.CreateResponse(HttpStatusCode.NotFound);
-            await notFound.WriteAsJsonAsync(error);
+            await notFound.WriteAsJsonAsync(createEmployeeResult.error);
             return notFound;
+
         }
-
-        // 3️ Add employee object to DbContext (invmemory tracking)
-        employeeDbContext.Employees.Remove(employee);
-
-        // 4️ Save changes to database (INSERT query executed here)
-        await employeeDbContext.SaveChangesAsync();
-
-        var response = req.CreateResponse(HttpStatusCode.OK);
+        HttpResponseData response = req.CreateResponse(HttpStatusCode.OK);
         await response.WriteStringAsync($"Employee with ID {id} is deleted.");
 
         return response;

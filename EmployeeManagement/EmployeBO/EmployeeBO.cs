@@ -16,11 +16,13 @@ namespace EmployeeManagement.EmployeBO
     {
         // Field to hold DAL object (readonly = cannot be reassigned after constructor)
         private readonly EmployeeDALC _employeeDAL;
+        private readonly EmployeeValidator employeeValidator;
 
         // Constructor receives EmployeeDAL via Dependency Injection
-        public EmployeeBO(EmployeeDALC employeeDAL)
+        public EmployeeBO(EmployeeDALC employeeDAL, EmployeeValidator employeeValidator)
         {
             _employeeDAL = employeeDAL;
+            this.employeeValidator = employeeValidator;
         }
 
         /// <summary>
@@ -64,11 +66,16 @@ namespace EmployeeManagement.EmployeBO
             // Call DAL method to fetch employees from database
         }
 
-        public async Task<CreateEmployeeResult> DeleteEmployee(int EmpID , EmployeeDbContext employeeDbContext)
+        /// <summary>
+        /// Delet Employee
+        /// </summary>
+        /// <param name="EmpID"></param>
+        /// <param name="employeeDbContext"></param>
+        /// <returns></returns>
+        public async Task<CreateEmployeeResult> DeleteEmployee(int EmpID)
         {
-            
             CreateEmployeeResult result = new();
-            result.error = EmployeeValidator.ValidateEmployeeID(EmpID , employeeDbContext);
+            result.error = EmployeeValidator.ValidateEmployeeID(EmpID);
             if(result.error.Any())
             {
                  result.isSuccess = false;
