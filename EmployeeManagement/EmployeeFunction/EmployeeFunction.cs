@@ -1,4 +1,6 @@
-﻿using EmployeeManagement.Data;
+﻿using EmployeeManagement.CustomModels;
+using EmployeeManagement.Data;
+using EmployeeManagement.EmployeBO;
 using EmployeeManagement.Model;
 using EmployeeManagement.Validation;
 using Microsoft.AspNetCore.Http;
@@ -15,12 +17,16 @@ public class EmployeeFunction
 {
     private readonly ILogger<EmployeeFunction> _logger;
     private readonly EmployeeDbContext employeeDbContext;
-    public EmployeeFunction(ILogger<EmployeeFunction> logger, EmployeeDbContext employeeDbContext)
+    private readonly EmployeeBO employeeBO1;
+
+    public EmployeeFunction(ILogger<EmployeeFunction> logger, EmployeeDbContext employeeDb,EmployeeBO employeeBo1)
     {
-        this.employeeDbContext = employeeDbContext;
+         this.employeeDbContext = employeeDb;
+         employeeBO1 = employeeBo1;
         _logger = logger;
     }
-
+  
+   
     /// <summary>
     /// Method to get employees
     /// </summary>
@@ -30,16 +36,19 @@ public class EmployeeFunction
     public async Task<HttpResponseData> GetEmployees([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "employees")]
     HttpRequestData req)
     {
+       
         _logger.LogInformation("GetEmployees called");
 
         _logger.LogInformation("Before DB call");
-        List<Model.Employee> employees =
-            await (from emp in employeeDbContext.Employees
-                   select emp).ToListAsync();
+
+        //Calling BO method To get list of employees
+        Task<List<Employee>> ListOfEmployees= employeeBO1.GetEmployees();
+
         _logger.LogInformation("After DB call");
 
-        var response = req.CreateResponse(HttpStatusCode.OK);
-        await response.WriteAsJsonAsync(employees);
+        HttpResponseData response = req.CreateResponse(HttpStatusCode.OK);
+
+        await response.WriteAsJsonAsync(ListOfEmployees);
         return response;
     }
 
@@ -54,34 +63,25 @@ public class EmployeeFunction
     {
         // 1️ Read request body JSON and convert it into Employee object
         Model.Employee employee = await req.ReadFromJsonAsync<Model.Employee>();
-        EmployeeValidator employeeValidator = new();
+        CreateEmployeeRequest request =
+         await req.ReadFromJsonAsync<CreateEmployeeRequest>();
 
-        List<string> validationError = EmployeeValidator.ValidateEmployee(employee);
+        //Called BO to create Employee
+        CreateEmployeeResult result =
+            await employeeBO1.CreateEmployee(request);
 
-        // 2️ Validate request body
-        List<string> errors = EmployeeValidator.ValidateEmployee(employee);
-
-        if (errors.Any())
+        if (!result.isSuccess)
         {
             var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
-            await badResponse.WriteAsJsonAsync(errors);
+            await badResponse.WriteAsJsonAsync(result.errors);
             return badResponse;
         }
 
-        // 3️ Add employee object to DbContext (invmemory tracking)
-        employeeDbContext.Employees.Add(employee);
-
-        // 4️ Save changes to database (INSERT query executed here)
-        await employeeDbContext.SaveChangesAsync();
-
-        // 5️ Create HTTP 201 (Created) response
         HttpResponseData response = req.CreateResponse(HttpStatusCode.Created);
-
-        // 6️ Return newly created employee as JSON
-        await response.WriteAsJsonAsync(employee);
-
+        await response.WriteAsJsonAsync(result);
         return response;
     }
+    
 
     /// <summary>
     /// Method to Delete Employee
