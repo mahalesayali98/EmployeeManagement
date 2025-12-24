@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using EmployeeManagement.CustomModels;
+using EmployeeManagement.Data;
 using EmployeeManagement.EmployeeDAL;
 using EmployeeManagement.Model;
 using EmployeeManagement.Validation;
+using Microsoft.Identity.Client;
 
 namespace EmployeeManagement.EmployeBO
 {
@@ -61,5 +63,23 @@ namespace EmployeeManagement.EmployeBO
             return result;
             // Call DAL method to fetch employees from database
         }
+
+        public async Task<CreateEmployeeResult> DeleteEmployee(int EmpID , EmployeeDbContext employeeDbContext)
+        {
+            
+            CreateEmployeeResult result = new();
+            result.error = EmployeeValidator.ValidateEmployeeID(EmpID , employeeDbContext);
+            if(result.error.Any())
+            {
+                 result.isSuccess = false;
+                return result;
+            }
+            Employee employee = await _employeeDAL.DeleteEmployeeAsync(EmpID);
+
+            result.isSuccess = true;
+            return result;
+
+        }
+
     }
 }

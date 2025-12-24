@@ -46,5 +46,33 @@ namespace EmployeeManagement.EmployeeDAL
             return employee;
         }
 
+        /// <summary>
+        /// Delete Employee
+        /// </summary>
+        /// <param name="empId"></param>
+        /// <returns></returns>
+        public async Task<Employee?> DeleteEmployeeAsync(int empId)
+        {
+            // Find employee by ID
+            Employee? employee =
+                await empDbContext.Employees.FirstOrDefaultAsync(e => e.Id == empId);
+
+            // If employee does not exist, return null
+            if (employee == null)
+            {
+                return null;
+            }
+
+            // Mark employee for deletion
+            empDbContext.Employees.Remove(employee);
+
+            // Execute DELETE statement in database
+            await empDbContext.SaveChangesAsync();
+
+            // Return deleted employee
+            return employee;
+        }
+
+
     }
 }

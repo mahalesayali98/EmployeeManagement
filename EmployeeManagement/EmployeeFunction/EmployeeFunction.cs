@@ -72,7 +72,7 @@ public class EmployeeFunction
 
         if (!result.isSuccess)
         {
-            var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+            HttpResponseData badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
             await badResponse.WriteAsJsonAsync(result.errors);
             return badResponse;
         }

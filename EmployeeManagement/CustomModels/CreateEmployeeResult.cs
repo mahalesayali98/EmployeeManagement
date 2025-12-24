@@ -1,4 +1,5 @@
 ﻿using EmployeeManagement.Model;
+using Microsoft.Identity.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace EmployeeManagement.CustomModels
         public bool isSuccess { get;  set; }
         public List<string> errors { get;  set; }
 
+        public string error { get; set; }
         public Employee employees { get; set; }
     }
 }
